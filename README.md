@@ -116,6 +116,14 @@ Redirect URLs: https://your-vercel-project.vercel.app
 
 `vercel.json` でSPA用のリライト設定を入れているため、`/routes/1` や `/profile` を直接開いても `index.html` が表示されます。
 
+## 先生・確認者向け
+
+公開URLがある場合は、そのURLを開くだけでアプリを確認できます。
+
+未デプロイの場合は、上記「デプロイ手順（Vercel）」に従ってVercelへデプロイしてください。
+
+Supabaseの環境変数は管理者から共有された値を使用してください。
+
 ## チーム開発ルール
 
 詳しい要件は [docs/team-requirements.md](docs/team-requirements.md) を確認してください。
