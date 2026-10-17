@@ -1,11 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import RouteCard from '../components/RouteCard.jsx';
-import PrefectureSelect from '../components/PrefectureSelect.jsx';
-import { supabase } from '../lib/supabase.js';
-import { loadProfilesByIds } from '../utils/profileData.js';
-import { Link, navigate } from '../utils/navigation.jsx';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import RouteCard from '../components/RouteCard';
+import PrefectureSelect from '../components/PrefectureSelect';
+import { supabase } from '../lib/supabase';
+import { loadProfilesByIds } from '../utils/profileData';
+import { Link, navigate } from '../utils/navigation';
+import { getErrorMessage } from '../utils/errors';
+import type { RouteListItem } from '../types/models';
 
-function readInitialFilters() {
+interface RouteFilters {
+  q: string;
+  prefectureCode: string;
+  userId: string;
+}
+
+function readInitialFilters(): RouteFilters {
   const params = new URLSearchParams(window.location.search);
   return {
     q: params.get('q') || '',
@@ -20,11 +28,17 @@ export default function RoutesIndexPage() {
   const [prefectureCode, setPrefectureCode] = useState(
     initialFilters.prefectureCode,
   );
-  const [routes, setRoutes] = useState([]);
+  const [routes, setRoutes] = useState<RouteListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  async function loadRoutes(filters = { q, prefectureCode, userId: initialFilters.userId }) {
+  async function loadRoutes(
+    filters: RouteFilters = {
+      q,
+      prefectureCode,
+      userId: initialFilters.userId,
+    },
+  ) {
     setLoading(true);
     setError('');
 
@@ -79,7 +93,9 @@ export default function RoutesIndexPage() {
           })),
         );
       } catch (profileError) {
-        setError(profileError.message);
+        setError(
+          getErrorMessage(profileError, 'プロフィールの取得に失敗しました。'),
+        );
       }
     }
 
@@ -91,7 +107,7 @@ export default function RoutesIndexPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handleSubmit(event) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const params = new URLSearchParams();
     if (q.trim()) params.set('q', q.trim());

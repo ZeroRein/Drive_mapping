@@ -1,28 +1,30 @@
 import { useEffect, useMemo, useState } from 'react';
-import { googleMapsApiKey, supabase } from '../lib/supabase.js';
-import { useAuth } from '../contexts/AuthContext.jsx';
+import { googleMapsApiKey, supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import {
   buildGoogleMapsDirectionsUrl,
   buildGoogleMapsEmbedUrl,
   getSafeGoogleMapsUrl,
-} from '../utils/googleMaps.js';
-import { getPrefectureName } from '../utils/prefectures.js';
-import { getPublicPhotoUrl, isOwner, likeCount } from '../utils/routeData.js';
-import { getAuthHref, Link, navigate } from '../utils/navigation.jsx';
+} from '../utils/googleMaps';
+import { getPrefectureName } from '../utils/prefectures';
+import { getPublicPhotoUrl, isOwner, likeCount } from '../utils/routeData';
+import { getAuthHref, Link, navigate } from '../utils/navigation';
+import type { PointType } from '../types/database';
+import type { RouteDetail } from '../types/models';
 
-const pointLabel = {
+const pointLabel: Record<PointType, string> = {
   start: 'スタート',
   middle: '中間',
   goal: 'ゴール',
 };
 
-export default function RouteShowPage({ id }) {
+export default function RouteShowPage({ id }: { id: number }) {
   const { user } = useAuth();
-  const [route, setRoute] = useState(null);
+  const [route, setRoute] = useState<RouteDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
 
   const owner = useMemo(() => isOwner(route, user), [route, user]);
   const liked = useMemo(
@@ -78,7 +80,7 @@ export default function RouteShowPage({ id }) {
   useEffect(() => {
     if (!selectedPhoto) return undefined;
 
-    function handleKeyDown(event) {
+    function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setSelectedPhoto(null);
       }
@@ -93,6 +95,8 @@ export default function RouteShowPage({ id }) {
       navigate(getAuthHref('/login'));
       return;
     }
+
+    if (!supabase) return;
 
     setBusy(true);
 
@@ -115,6 +119,7 @@ export default function RouteShowPage({ id }) {
 
   async function deleteRoute() {
     if (!owner || !window.confirm('本当に削除しますか？')) return;
+    if (!supabase) return;
 
     setBusy(true);
     const { error: deleteError } = await supabase

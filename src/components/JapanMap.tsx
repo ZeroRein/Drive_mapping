@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { prefectureMap } from '../utils/prefectures.js';
-import { navigate } from '../utils/navigation.jsx';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { prefectureMap } from '../utils/prefectures';
+import { navigate } from '../utils/navigation';
+import type { PrefectureCounts } from '../types/models';
 
-const areas = [
+/** [都道府県コード, 表示名, imagemap用の座標] */
+type MapArea = [code: number, name: string, coords: string];
+
+const areas: MapArea[] = [
   [47, '沖縄県', '76,774,98,774,99,818,76,817'],
   [46, '鹿児島県', '111,720,111,762,136,763,136,749,161,750,161,773,167,774,196,754,196,731,168,731,168,720'],
   [43, '熊本県', '123,662,123,704,111,713,111,720,167,719,168,662'],
@@ -52,8 +56,13 @@ const areas = [
   [1, '北海道', '672,80,672,187,638,213,638,246,689,246,689,228,712,227,753,256,802,228,845,228,846,158,812,158,716,80'],
 ];
 
-export default function JapanMap({ counts, hrefForCode }) {
-  const imageRef = useRef(null);
+export interface JapanMapProps {
+  counts: PrefectureCounts;
+  hrefForCode?: (code: number) => string;
+}
+
+export default function JapanMap({ counts, hrefForCode }: JapanMapProps) {
+  const imageRef = useRef<HTMLImageElement>(null);
   const [scale, setScale] = useState({ x: 1, y: 1 });
   const [heatOn, setHeatOn] = useState(() => {
     try {
@@ -79,7 +88,7 @@ export default function JapanMap({ counts, hrefForCode }) {
     return () => window.removeEventListener('resize', updateScale);
   }, []);
 
-  function handleClick(event, code) {
+  function handleClick(event: MouseEvent<HTMLAreaElement>, code: number) {
     event.preventDefault();
     navigate(hrefForCode ? hrefForCode(code) : `/routes?prefecture_code=${code}`);
   }
@@ -90,14 +99,14 @@ export default function JapanMap({ counts, hrefForCode }) {
     localStorage.setItem('dm_heatmap_on', next ? '1' : '0');
   }
 
-  function heatColor(count) {
+  function heatColor(count: number): string {
     if (count <= 0) return 'rgba(0,0,0,0)';
     if (count <= 10) return 'rgba(82, 190, 0, 0.30)';
     if (count <= 20) return 'rgba(237, 233, 0, 0.30)';
     return 'rgba(240, 23, 23, 0.30)';
   }
 
-  function coordsToPoints(coords) {
+  function coordsToPoints(coords: string): string {
     const values = coords.split(',');
     const points = [];
     for (let index = 0; index < values.length; index += 2) {
@@ -106,7 +115,7 @@ export default function JapanMap({ counts, hrefForCode }) {
     return points.join(' ');
   }
 
-  function scaledCoords(coords) {
+  function scaledCoords(coords: string): string {
     return coords
       .split(',')
       .map((value, index) => {

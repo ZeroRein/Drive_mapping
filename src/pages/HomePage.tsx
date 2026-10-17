@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import JapanMap from '../components/JapanMap.jsx';
-import { useAuth } from '../contexts/AuthContext.jsx';
-import { supabase } from '../lib/supabase.js';
-import { getPrefectureName } from '../utils/prefectures.js';
-import { Link } from '../utils/navigation.jsx';
+import JapanMap from '../components/JapanMap';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+import { getPrefectureName } from '../utils/prefectures';
+import { Link } from '../utils/navigation';
+import type { PrefectureCounts } from '../types/models';
 
 export default function HomePage() {
   const { user } = useAuth();
-  const [counts, setCounts] = useState({});
+  const [counts, setCounts] = useState<PrefectureCounts>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export default function HomePage() {
         .eq('is_main', true);
 
       if (!error && data) {
-        const nextCounts = {};
+        const nextCounts: PrefectureCounts = {};
         data.forEach((route) => {
           const code = Number(route.prefecture_code);
           if (code) nextCounts[code] = (nextCounts[code] || 0) + 1;

@@ -1,20 +1,23 @@
-import { useState } from 'react';
-import ProfileAvatar from './ProfileAvatar.jsx';
-import { useAuth } from '../contexts/AuthContext.jsx';
-import { supabase } from '../lib/supabase.js';
-import { getAuthHref, Link } from '../utils/navigation.jsx';
+import { useState, type FormEvent, type ReactNode } from 'react';
+import ProfileAvatar from './ProfileAvatar';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+import { getAuthHref, Link } from '../utils/navigation';
+import type { ProfileSummary } from '../types/models';
 
-export default function Layout({ children }) {
+export default function Layout({ children }: { children: ReactNode }) {
   const { authError, loading, profile, user } = useAuth();
   const userName = profile?.name || user?.email || 'ユーザー';
   const [accountQuery, setAccountQuery] = useState('');
-  const [accountResults, setAccountResults] = useState([]);
-  const [followedIds, setFollowedIds] = useState(() => new Set());
+  const [accountResults, setAccountResults] = useState<ProfileSummary[]>([]);
+  const [followedIds, setFollowedIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [searching, setSearching] = useState(false);
 
-  async function handleAccountSearch(event) {
+  async function handleAccountSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSearchError('');
 
@@ -56,7 +59,7 @@ export default function Layout({ children }) {
     setSearching(false);
   }
 
-  async function toggleSearchFollow(profileId) {
+  async function toggleSearchFollow(profileId: string) {
     if (!supabase || !user || !profileId) return;
 
     if (followedIds.has(profileId)) {
